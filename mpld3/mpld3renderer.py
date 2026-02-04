@@ -248,6 +248,8 @@ class MPLD3Renderer(Renderer):
                     alpha=style['alpha'],
                     zorder=style['zorder'],
                     id=get_id(mplobj))
+        if style.get('bbox') is not None:
+            text['bbox'] = style['bbox']
         self.axes_json['texts'].append(text)
 
     def draw_figure_text(self, text, position, coordinates, style,
@@ -266,6 +268,8 @@ class MPLD3Renderer(Renderer):
                     alpha=style['alpha'],
                     zorder=style['zorder'],
                     id=get_id(mplobj))
+        if style.get('bbox') is not None:
+            text['bbox'] = style['bbox']
         self.figure_json['texts'].append(text)
 
     def draw_image(self, imdata, extent, coordinates, style, mplobj=None):

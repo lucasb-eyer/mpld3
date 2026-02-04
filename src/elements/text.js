@@ -16,6 +16,7 @@ mpld3_Text.prototype.defaultProps = {
     drawstyle: "none",
     color: "black",
     alpha: 1.0,
+    bbox: null,
     zorder: 3
 };
 
@@ -27,18 +28,28 @@ function mpld3_Text(ax, props) {
 };
 
 mpld3_Text.prototype.draw = function() {
+    var target;
     if (this.ax) {
         if (this.props.coordinates == "data") {
             if (this.coords.zoomable) {
-                this.obj = this.ax.paths.append("text");
+                target = this.ax.paths;
             } else {
-                this.obj = this.ax.staticPaths.append("text");
+                target = this.ax.staticPaths;
             }
         } else {
-            this.obj = this.ax.baseaxes.append("text");
+            target = this.ax.baseaxes;
         }
     } else {
-        var target = this.fig.figureTextGroup || this.fig.canvas;
+        target = this.fig.figureTextGroup || this.fig.canvas;
+    }
+
+    if (this.props.bbox) {
+        this.group = target.append("g")
+            .attr("class", "mpld3-textgroup");
+        this.bbox = this.group.append("rect")
+            .attr("class", "mpld3-textbox");
+        this.obj = this.group.append("text");
+    } else {
         this.obj = target.append("text");
     }
 
@@ -51,11 +62,14 @@ mpld3_Text.prototype.draw = function() {
         .style("fill", this.props.color)
         .style("opacity", this.props.alpha);
     this._setText();
+    if (this.bbox) {
+        this._applyBBoxStyle();
+    }
     this.applyTransform();
 };
 
 mpld3_Text.prototype.elements = function(d) {
-    return d3.select(this.obj);
+    return d3.select(this.group || this.obj);
 };
 
 mpld3_Text.prototype._setText = function() {
@@ -85,9 +99,13 @@ mpld3_Text.prototype.applyTransform = function() {
     var pos = this.coords.xy(this.position);
     this.obj.attr("x", pos[0]).attr("y", pos[1]);
     this._applyMultilineAlignment(this.obj.selectAll("tspan"), pos[0]);
+    if (this.bbox) {
+        this._updateBBox();
+    }
 
-    if (this.props.rotation)
-        this.obj.attr("transform", "rotate(" + this.props.rotation + "," + pos + ")");
+    if (this.props.rotation) {
+        (this.group || this.obj).attr("transform", "rotate(" + this.props.rotation + "," + pos + ")");
+    }
 };
 
 mpld3_Text.prototype._applyMultilineAlignment = function(tspans, anchorX) {
@@ -136,6 +154,59 @@ mpld3_Text.prototype._applyMultilineAlignment = function(tspans, anchorX) {
             .attr("x", x)
             .style("text-anchor", "start");
     });
+};
+
+mpld3_Text.prototype._applyBBoxStyle = function() {
+    var props = this.props.bbox;
+    var edgecolor = props.edgecolor || "none";
+    var facecolor = props.facecolor || "none";
+    var edgewidth = props.edgewidth == null ? 0 : props.edgewidth;
+    var dasharray = props.dasharray == null ? "none" : props.dasharray;
+
+    this.bbox
+        .style("fill", facecolor)
+        .style("stroke", edgecolor)
+        .style("stroke-width", edgewidth)
+        .style("stroke-dasharray", dasharray)
+        .attr("vector-effect", "non-scaling-stroke");
+
+    if (edgecolor.slice(0, 5) != "rgba(") {
+        this.bbox.style("stroke-opacity", props.alpha);
+    }
+    if (facecolor.slice(0, 5) != "rgba(") {
+        this.bbox.style("fill-opacity", props.alpha);
+    }
+};
+
+mpld3_Text.prototype._updateBBox = function() {
+    var props = this.props.bbox;
+    var textBox = this.obj.node().getBBox();
+    var pad = props.pad == null ? 0 : props.pad;
+    var scale = props.mutation_scale == null ? this.props.fontsize : props.mutation_scale;
+    var aspect = props.mutation_aspect == null ? 1 : props.mutation_aspect;
+    var paddingX = pad * scale;
+    var paddingY = pad * scale * aspect;
+    var x = textBox.x - paddingX;
+    var y = textBox.y - paddingY;
+    var width = textBox.width + 2 * paddingX;
+    var height = textBox.height + 2 * paddingY;
+
+    this.bbox
+        .attr("x", x)
+        .attr("y", y)
+        .attr("width", width)
+        .attr("height", height);
+
+    var radius = 0;
+    if (props.boxstyle && props.boxstyle.toLowerCase().indexOf("round") !== -1) {
+        var rounding = props.rounding_size == null ? pad : props.rounding_size;
+        radius = rounding * scale;
+    }
+    if (radius > 0) {
+        this.bbox.attr("rx", radius).attr("ry", radius);
+    } else {
+        this.bbox.attr("rx", null).attr("ry", null);
+    }
 };
 
 // TODO: (@vladh) Remove legacy zooming code.
