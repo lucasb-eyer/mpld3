@@ -122,6 +122,27 @@ def test_text():
     assert_equal(text['coordinates'], "data")
 
 
+def test_text_bbox():
+    fig, ax = plt.subplots()
+    ax.text(0.1, 0.1, "boxed",
+            bbox=dict(boxstyle="round,pad=0.3",
+                      fc="yellow", ec="black", lw=2, alpha=0.5))
+    rep = fig_to_dict(fig)
+    text = rep['axes'][0]['texts'][0]
+
+    assert_equal(list(sorted(text.keys())),
+                 ['alpha', 'bbox', 'color', 'coordinates', 'fontsize',
+                  'h_anchor', 'id', 'linespacing', 'm_align', 'position',
+                  'rotation', 'text', 'v_align', 'v_baseline', 'zorder'])
+    bbox = text['bbox']
+    assert_equal(bbox['facecolor'], "#FFFF00")
+    assert_equal(bbox['edgecolor'], "#000000")
+    assert_equal(bbox['edgewidth'], 2)
+    assert_almost_equal(bbox['alpha'], 0.5)
+    assert_equal(bbox['boxstyle'], "round")
+    assert_almost_equal(bbox['pad'], 0.3)
+
+
 def test_hlines_linestyle():
     fig, ax = plt.subplots()
     ax.hlines([0, 1], [0, 0], [1, 2], linestyles='--')
