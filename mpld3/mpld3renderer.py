@@ -226,7 +226,10 @@ class MPLD3Renderer(Renderer):
                           pathcoordinates=path_coordinates,
                           zorder=styles['zorder'])
 
-            pathsdict = self.add_data(offsets, "offsets")
+            if offsets is None:
+                pathsdict = {"offsets": None}
+            else:
+                pathsdict = self.add_data(offsets, "offsets")
             pathsdict['paths'] = [(v.tolist(), p) for (v, p) in paths]
             pathsdict['pathtransforms'] = [(t[0, :2].tolist()
                                             + t[1, :2].tolist()

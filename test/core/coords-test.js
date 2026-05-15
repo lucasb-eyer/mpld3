@@ -19,6 +19,31 @@ suite.addBatch({
                 return new mpld3.Coordinates("display", fig.axes[0]);
 	    },
 	    "transforms to the correct display coordinates": function(coords){
+                assert.equal(coords.xy([100, 100])[0], 60);
+                assert.equal(coords.xy([100, 100])[1], 170);
+	    }
+	},
+	"A figure-level Coordinates('display') object": {
+	    topic: function(mpld3) {
+                var fig_props = {
+                    width: 400,
+                    height: 300,
+                    axes: []
+                };
+                var fig = new mpld3.Figure("chart", fig_props);
+                fig.draw();
+                return new mpld3.Coordinates("display", null, fig);
+	    },
+	    "transforms to the correct display coordinates": function(coords){
+                assert.equal(coords.xy([100, 100])[0], 100);
+                assert.equal(coords.xy([100, 100])[1], 200);
+	    }
+	},
+	"A Coordinates('points') object": {
+	    topic: function(mpld3) {
+                return new mpld3.Coordinates("points");
+	    },
+	    "keeps local point coordinates unchanged": function(coords){
                 assert.equal(coords.xy([100, 100])[0], 100);
                 assert.equal(coords.xy([100, 100])[1], 100);
 	    }

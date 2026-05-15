@@ -11,7 +11,7 @@ mpld3_PathCollection.prototype.defaultProps = {
     xindex: 0,
     yindex: 1,
     pathtransforms: [],
-    pathcoordinates: "display",
+    pathcoordinates: "points",
     offsetcoordinates: "data",
     offsetorder: "before",
     edgecolors: ["#000000"],

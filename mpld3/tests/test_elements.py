@@ -3,6 +3,7 @@ Test creation of basic plot elements
 """
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
 from .. import fig_to_dict, fig_to_html
 from numpy.testing import assert_equal, assert_almost_equal
 
@@ -67,6 +68,8 @@ def test_scatter():
     assert_equal(points['alphas'], [0.3])
     assert_equal(points['dasharrays'], ['none'])
     assert_equal(points['zorder'], 10)
+    assert_equal(points['pathcoordinates'], 'points')
+    assert_equal(points['offsetcoordinates'], 'data')
     assert_equal(points['edgecolors'], ['rgba(0, 0, 255, 0.3)'])
     assert_equal(points['facecolors'], ['rgba(255, 0, 0, 0.3)'])
     assert_equal(points['edgewidths'], (2.0,))
@@ -152,6 +155,16 @@ def test_hlines_linestyle():
     assert 'dasharrays' in collection
     assert len(collection['dasharrays']) > 0
     assert collection['dasharrays'][0] not in (None, 'none')
+
+
+def test_line_collection_without_offsets():
+    fig, ax = plt.subplots()
+    ax.add_collection(LineCollection([[(0, 0), (1, 1)]]))
+    rep = fig_to_dict(fig)
+    collection = rep['axes'][0]['collections'][0]
+
+    assert_equal(collection['pathcoordinates'], 'data')
+    assert_equal(collection['offsets'], None)
 
 
 def test_image():
