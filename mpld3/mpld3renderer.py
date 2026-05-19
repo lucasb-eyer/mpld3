@@ -255,6 +255,8 @@ class MPLD3Renderer(Renderer):
                     alpha=style['alpha'],
                     zorder=style['zorder'],
                     id=get_id(mplobj))
+        if style.get('clip_on'):
+            text['clip_on'] = True
         if style.get('bbox') is not None:
             text['bbox'] = style['bbox']
         self.axes_json['texts'].append(text)

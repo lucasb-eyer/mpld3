@@ -216,7 +216,7 @@ mpld3_Axes.prototype.draw = function() {
         .attr("class", "mpld3-paths-container");
 
     this.paths = this.pathsContainer.append("g")
-        .attr("class", "mpld3-paths");
+        .attr("class", "mpld3-paths mpld3-zoomable");
 
     this.staticPaths = this.axes.append("g")
         .attr("class", "mpld3-staticpaths");
@@ -400,13 +400,40 @@ mpld3_Axes.prototype.zoomed = function() {
         this.doZoom(true, d3.event.transform, false);
     } else {
         var transform = d3.event.transform;
-        this.paths.attr('transform', transform);
+        this.axes.selectAll(".mpld3-zoomable").attr('transform', transform);
         this.elements.forEach(function(element) {
             if (element.zoomed) {
                 element.zoomed(transform);
             }
         }.bind(this));
     }
+};
+
+mpld3_Axes.prototype.appendDataElement = function(clipOn, cssclass) {
+    var outer = this.axes.append("g")
+        .attr("class", "mpld3-data-element");
+    if (clipOn) {
+        outer.attr("clip-path", "url(#" + this.clipid + ")");
+    }
+
+    var innerClass = "mpld3-zoomable";
+    if (cssclass) {
+        innerClass += " " + cssclass;
+    }
+    return outer.append("g").attr("class", innerClass);
+};
+
+mpld3_Axes.prototype.appendStaticElement = function(clipOn, cssclass, parent) {
+    parent = parent || this.axes;
+    var elementClass = "mpld3-static-element";
+    if (cssclass) {
+        elementClass += " " + cssclass;
+    }
+    var element = parent.append("g").attr("class", elementClass);
+    if (clipOn) {
+        element.attr("clip-path", "url(#" + this.clipid + ")");
+    }
+    return element;
 };
 
 mpld3_Axes.prototype.resetBrush = function() {

@@ -33,6 +33,38 @@ suite.addBatch({
                 assert.equal(path.datafunc(path.data, path.pathcodes),
                              "M 0 180 L 80 120 L 160 60 L 240 120 L 320 180 Z");
             }
+        },
+        "An axes-coordinate Path without offset": {
+            topic: function(mpld3) {
+                var fig_props = {
+                    width: 400,
+                    height: 300
+                };
+                var ax_props = {
+                    xlim: [0, 4],
+                    ylim: [0, 4],
+                    axes: []
+                };
+                var path_props = {
+                    data: [[0, 0], [1, 1]],
+                    pathcodes: ['M', 'L'],
+                    coordinates: "axes"
+                };
+                var root = document.createElement("div");
+                root.setAttribute("id", "chart_axes_path");
+                document.body.appendChild(root);
+                var fig = new mpld3.Figure("chart_axes_path", fig_props);
+                var ax = new mpld3.Axes(fig, ax_props);
+                var path = new mpld3.Path(ax, path_props);
+                ax.elements.push(path);
+                fig.axes.push(ax);
+                fig.draw();
+                return path;
+            },
+            "stays in a static layer.": function(path) {
+                assert.equal(path.path.node().parentNode.getAttribute("class"),
+                             "mpld3-static-element");
+            }
         }
     }
 });

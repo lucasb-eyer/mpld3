@@ -138,12 +138,31 @@ def test_text_bbox():
                   'h_anchor', 'id', 'linespacing', 'm_align', 'position',
                   'rotation', 'text', 'v_align', 'v_baseline', 'zorder'])
     bbox = text['bbox']
-    assert_equal(bbox['facecolor'], "#FFFF00")
-    assert_equal(bbox['edgecolor'], "#000000")
+    assert_equal(bbox['facecolor'], "rgba(255, 255, 0, 0.5)")
+    assert_equal(bbox['edgecolor'], "rgba(0, 0, 0, 0.5)")
     assert_equal(bbox['edgewidth'], 2)
     assert_almost_equal(bbox['alpha'], 0.5)
     assert_equal(bbox['boxstyle'], "round")
     assert_almost_equal(bbox['pad'], 0.3)
+
+
+def test_text_clip_on():
+    fig, ax = plt.subplots()
+    ax.text(0.5, 1.2, "clipped", clip_on=True)
+    custom = ax.text(0.5, 1.2, "custom clipped", clip_on=True)
+    custom.set_clip_path(plt.Circle((0.5, 0.5), 0.2,
+                                    transform=ax.transData))
+    ax.set_title("unclipped title")
+    rep = fig_to_dict(fig)
+    texts = rep['axes'][0]['texts']
+
+    clipped = next(text for text in texts if text['text'] == "clipped")
+    custom = next(text for text in texts if text['text'] == "custom clipped")
+    title = next(text for text in texts if text['text'] == "unclipped title")
+
+    assert_equal(clipped['clip_on'], True)
+    assert 'clip_on' not in custom
+    assert 'clip_on' not in title
 
 
 def test_hlines_linestyle():

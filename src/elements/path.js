@@ -52,11 +52,11 @@ mpld3_Path.prototype.draw = function() {
             return this.pathcoords.y(d[this.props.yindex]);
         }.bind(this));
 
-    // TODO: (@vladh) Don't fully understand this.
-    if (this.pathcoords.zoomable) {
-        this.path = this.ax.paths.append("svg:path")
+    var hasZoomableOffset = this.props.offset !== null && this.offsetcoords.zoomable;
+    if (this.pathcoords.zoomable || hasZoomableOffset) {
+        this.path = this.ax.appendDataElement(true).append("svg:path")
     } else {
-        this.path = this.ax.staticPaths.append("svg:path")
+        this.path = this.ax.appendStaticElement(false).append("svg:path")
     }
 
     this.path = this.path

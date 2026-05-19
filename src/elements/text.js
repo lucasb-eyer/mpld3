@@ -17,6 +17,7 @@ mpld3_Text.prototype.defaultProps = {
     color: "black",
     alpha: 1.0,
     bbox: null,
+    clip_on: false,
     zorder: 3
 };
 
@@ -29,15 +30,19 @@ function mpld3_Text(ax, props) {
 
 mpld3_Text.prototype.draw = function() {
     var target;
+    var clippedByParent = false;
     if (this.ax) {
         if (this.props.coordinates == "data") {
             if (this.coords.zoomable) {
-                target = this.ax.paths;
+                target = this.ax.appendDataElement(this.props.clip_on);
+                clippedByParent = this.props.clip_on;
             } else {
-                target = this.ax.staticPaths;
+                target = this.ax.appendStaticElement(this.props.clip_on);
+                clippedByParent = this.props.clip_on;
             }
         } else {
-            target = this.ax.baseaxes;
+            target = this.ax.appendStaticElement(this.props.clip_on, null, this.ax.baseaxes);
+            clippedByParent = this.props.clip_on;
         }
     } else {
         target = this.fig.figureTextGroup || this.fig.canvas;
@@ -64,6 +69,9 @@ mpld3_Text.prototype.draw = function() {
     this._setText();
     if (this.bbox) {
         this._applyBBoxStyle();
+    }
+    if (this.props.clip_on && this.ax && !clippedByParent) {
+        (this.group || this.obj).attr("clip-path", "url(#" + this.ax.clipid + ")");
     }
     this.applyTransform();
 };
